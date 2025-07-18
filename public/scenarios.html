@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Scenario's - The Company</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Extra stijlen voor deze pagina */
+        .scenario {
+            background-color: #2b2b2b;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 3px solid #ff4500;
+        }
+        .scenario h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Scenario's & Plannen</h1>
+        <a href="/dashboard.html">Terug naar Dashboard</a>
+    </header>
+
+    <main>
+        <div class="scenario">
+            <h3>Operatie Goudklomp</h3>
+            <p><strong>Doel:</strong> De bank overvallen tijdens daluren.</p>
+            <p><strong>Benodigdheden:</strong> 2x thermite, 4x zware vesten, 1x hacker.</p>
+            <p><strong>Stappenplan:</strong>
+                <ol>
+                    <li>Team A (2 leden) zorgt voor afleiding bij de hoofdingang.</li>
+                    <li>Team B (2 leden) gaat via de achterkant naar binnen en plaatst de thermite.</li>
+                    <li>De hacker deactiveert de camera's.</li>
+                    <li>Na het breken van de kluis, verzamelen bij vluchtpunt Noord.</li>
+                </ol>
+            </p>
+        </div>
+
+        <div class="scenario">
+            <h3>Juweelroof</h3>
+            <p><strong>Doel:</strong> De juwelier leegroven.</p>
+            <p><strong>Benodigdheden:</strong> Glasboren, snelle vluchtauto.</p>
+            <p><strong>Stappenplan:</strong>
+                <ul>
+                    <li>Verken de omgeving voor politie-aanwezigheid.</li>
+                    <li>Snelle in-en-uit actie, maximaal 2 minuten binnen.</li>
+                    <li>De chauffeur wacht met draaiende motor.</li>
+                </ul>
+            </p>
+        </div>
+
+        </main>
+
+    <script>
+        const token = localStorage.getItem('token');
+
+        // Beveilig de pagina
+        if (!token) {
+            window.location.href = '/index.html';
+        }
+    </script>
+</body>
+</html>

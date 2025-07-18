@@ -1,0 +1,155 @@
+/* --- ALGEMEEN THEMA --- */
+body {
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0 20px; /* Voeg wat padding toe aan de zijkanten */
+}
+
+a {
+    color: #E67E22; /* Maak alle links standaard oranje */
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+button {
+    background-color: #E67E22; /* Oranje achtergrond voor alle knoppen */
+    color: white;
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.2s; /* Vloeiende hover-animatie */
+}
+
+button:hover {
+    background-color: #D35400; /* Iets donkerder oranje bij hover */
+}
+
+input, select {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: #f0f0f0;
+    font-size: 16px;
+}
+
+hr {
+    border-color: #444;
+}
+
+/* --- LAYOUT & SECTIES --- */
+header {
+    background-color: #0d0d0d;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 2px solid #E67E22; /* Aangepaste accentkleur */
+    margin: 0 -20px 20px -20px; /* Zorg dat de header de volledige breedte pakt */
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+header nav a {
+    text-decoration: none; /* Verwijder standaard onderlijning */
+    margin: 0 15px;
+    font-size: 1.2em;
+}
+
+header nav a:hover {
+    text-decoration: underline; /* Voeg alleen onderlijning toe bij hover */
+}
+
+main {
+    max-width: 900px;
+    margin: 0 auto; /* Centreer de hoofdinhoud */
+    padding-bottom: 40px;
+}
+
+section, .scenario {
+    background-color: #2b2b2b;
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+section h2, .scenario h3 {
+    color: #E67E22; /* Aangepaste accentkleur */
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+    margin-top: 0;
+}
+
+/* --- TABELLEN --- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    table-layout: fixed; /* Zorgt voor betere kolomindeling */
+}
+
+th, td {
+    border: 1px solid #444;
+    padding: 10px;
+    text-align: left;
+    word-wrap: break-word; /* Zorgt dat lange namen afbreken */
+}
+
+th {
+    background-color: #1a1a1a;
+    color: #E67E22; /* Aangepaste accentkleur */
+}
+
+/* --- PROFIEL DROPDOWN MENU --- */
+.profile-dropdown-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.profile-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #2b2b2b;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+    z-index: 1;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.dropdown-content a {
+    color: #f0f0f0;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #444;
+    text-decoration: none;
+}
+
+.show {
+    display: block;
+}
+
+/* --- SPECIFIEKE STIJLEN --- */
+.admin-form, .admin-controls, .actions-column {
+    display: none;
+}

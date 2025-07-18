@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Reserveringen Beheren - The Company</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Reserveringen Beheren</h1>
+        <a href="/dashboard.html">Terug naar Dashboard</a>
+    </header>
+    <main>
+        <table id="reservationsTable">
+            <thead>
+                <tr>
+                    <th>Gebruiker</th>
+                    <th>Item</th>
+                    <th>Aantal</th>
+                    <th>Datum</th>
+                    <th>Status</th>
+                    <th>Acties</th>
+                </tr>
+            </thead>
+            <tbody id="reservationsTableBody"></tbody>
+        </table>
+    </main>
+    <script>
+        const token = localStorage.getItem('token');
+        const adminRanks = ['Oyabun', 'Wakagashira', 'Saikō-komon']; // De lijst met leiderschapsrangen
+
+        (async () => {
+            if (!token) { window.location.href = '/index.html'; return; }
+            
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                
+                // --- DIT IS DE CORRECTIE ---
+                // Controleer of de gebruiker een van de leiderschapsrangen heeft
+                if (!adminRanks.includes(payload.role)) {
+                    // Zo niet, stuur terug naar het dashboard
+                    window.location.href = '/dashboard.html'; 
+                    return;
+                }
+                
+                // Als de check slaagt, laad de reserveringen
+                fetchReservations();
+
+            } catch (e) {
+                localStorage.removeItem('token');
+                window.location.href = '/index.html';
+            }
+        })();
+
+        async function fetchReservations() {
+            const response = await fetch('/api/reservations', { headers: { 'x-auth-token': token } });
+            const reservations = await response.json();
+            const tableBody = document.getElementById('reservationsTableBody');
+            tableBody.innerHTML = '';
+            reservations.forEach(res => {
+                const row = document.createElement('tr');
+                let actions = '';
+                if (res.status === 'In afwachting') {
+                    actions = `
+                        <button onclick="updateStatus('${res._id}', 'Goedgekeurd')">Goedkeuren</button>
+                        <button onclick="updateStatus('${res._id}', 'Afgekeurd')">Afkeuren</button>
+                    `;
+                }
+                row.innerHTML = `
+                    <td>${res.username}</td>
+                    <td>${res.itemName}</td>
+                    <td>${res.quantity}</td>
+                    <td>${new Date(res.createdAt).toLocaleString('nl-NL')}</td>
+                    <td>${res.status}</td>
+                    <td>${actions}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        async function updateStatus(id, status) {
+            await fetch(`/api/reservations/status/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
+                body: JSON.stringify({ status })
+            });
+            fetchReservations();
+        }
+    </script>
+</body>
+</html>

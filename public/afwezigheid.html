@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Afwezigheid Melden - The Company</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Afwezigheid</h1>
+        <a href="/dashboard.html">Terug naar Dashboard</a>
+    </header>
+
+    <main>
+        <h2>Meld je afwezig</h2>
+        <form id="absenceForm">
+            <label for="startDate">Vanaf:</label>
+            <input type="date" id="startDate" required>
+            <br><br>
+            <label for="endDate">Tot en met:</label>
+            <input type="date" id="endDate" required>
+            <br><br>
+            <label for="reason">Reden (optioneel):</label>
+            <input type="text" id="reason" placeholder="bv. Vakantie">
+            <br><br>
+            <button type="submit">Meld Afwezigheid</button>
+        </form>
+        <p id="message"></p>
+        
+        <div id="admin-view" style="display: none;">
+            <hr>
+            <h2>Overzicht Afmeldingen</h2>
+            <table id="absenceTable">
+                <thead>
+                    <tr>
+                        <th>Gebruiker</th>
+                        <th>Vanaf</th>
+                        <th>Tot</th>
+                        <th>Reden</th>
+                        <th>Acties</th>
+                    </tr>
+                </thead>
+                <tbody id="absenceTableBody"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        const token = localStorage.getItem('token');
+        let userRole = '';
+        const adminRanks = ['Oyabun', 'Wakagashira', 'Saikō-komon'];
+
+        (async () => {
+            if (!token) { window.location.href = '/index.html'; return; }
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                userRole = payload.role;
+            } catch(e) { window.location.href = '/index.html'; return; }
+
+            if (adminRanks.includes(userRole)) {
+                document.getElementById('admin-view').style.display = 'block';
+                fetchAbsences();
+            }
+        })();
+
+        async function fetchAbsences() {
+            const response = await fetch('/api/absences', { headers: { 'x-auth-token': token }});
+            const absences = await response.json();
+            const tableBody = document.getElementById('absenceTableBody');
+            tableBody.innerHTML = '';
+            absences.forEach(absence => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${absence.username}</td>
+                    <td>${new Date(absence.startDate).toLocaleDateString('nl-NL')}</td>
+                    <td>${new Date(absence.endDate).toLocaleDateString('nl-NL')}</td>
+                    <td>${absence.reason || '-'}</td>
+                    <td><button onclick="deleteAbsence('${absence._id}')">Verwijder</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        async function deleteAbsence(id) {
+            if (!confirm('Weet je zeker dat je deze melding wilt verwijderen?')) return;
+            await fetch(`/api/absences/${id}`, { method: 'DELETE', headers: { 'x-auth-token': token }});
+            fetchAbsences();
+        }
+
+        document.getElementById('absenceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const messageEl = document.getElementById('message');
+            const response = await fetch('/api/absences', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
+                body: JSON.stringify({
+                    startDate: document.getElementById('startDate').value,
+                    endDate: document.getElementById('endDate').value,
+                    reason: document.getElementById('reason').value,
+                })
+            });
+            if (response.ok) {
+                messageEl.textContent = 'Afwezigheid succesvol gemeld.';
+                messageEl.style.color = 'green';
+                document.getElementById('absenceForm').reset();
+                if (adminRanks.includes(userRole)) fetchAbsences();
+            } else {
+                messageEl.textContent = 'Er is een fout opgetreden.';
+                messageEl.style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Financiën Beheer - The Company</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Financiën Beheer</h1>
+        <a href="/dashboard.html">Terug naar Dashboard</a>
+    </header>
+
+    <main>
+        <h2>Huidige Saldo</h2>
+        <p><strong>Gangpot:</strong> € <span id="gangpotDisplay">0</span></p>
+        <p><strong>Zwart Geld:</strong> € <span id="zwartgeldDisplay">0</span></p>
+
+        <div id="updateFormContainer" style="display: none;">
+            <hr>
+            <h2>Saldo Aanpassen</h2>
+            <form id="updateForm">
+                <label for="gangpotInput">Gangpot:</label>
+                <input type="number" id="gangpotInput" required>
+                <br><br>
+                <label for="zwartgeldInput">Zwart Geld:</label>
+                <input type="number" id="zwartgeldInput" required>
+                <br><br>
+                <button type="submit">Opslaan</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        const token = localStorage.getItem('token');
+        const gangpotDisplay = document.getElementById('gangpotDisplay');
+        const zwartgeldDisplay = document.getElementById('zwartgeldDisplay');
+        const gangpotInput = document.getElementById('gangpotInput');
+        const zwartgeldInput = document.getElementById('zwartgeldInput');
+        const updateFormContainer = document.getElementById('updateFormContainer');
+
+        // Beveilig de pagina en haal data op
+        (async () => {
+            if (!token) {
+                window.location.href = '/index.html';
+                return;
+            }
+
+            // Toon het update formulier voor admins
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (payload.role === 'admin') {
+                updateFormContainer.style.display = 'block';
+            }
+
+            fetchFinances();
+        })();
+
+        // Functie om de financiën op te halen en te tonen
+        async function fetchFinances() {
+            const response = await fetch('/api/finances', {
+                headers: { 'x-auth-token': token }
+            });
+            const finances = await response.json();
+
+            gangpotDisplay.textContent = finances.gangpot.toLocaleString('nl-NL');
+            zwartgeldDisplay.textContent = finances.zwartgeld.toLocaleString('nl-NL');
+            gangpotInput.value = finances.gangpot;
+            zwartgeldInput.value = finances.zwartgeld;
+        }
+
+        // Event listener voor het 'update' formulier
+        const updateForm = document.getElementById('updateForm');
+        updateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            await fetch('/api/finances/update', {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-auth-token': token 
+                },
+                body: JSON.stringify({ 
+                    gangpot: parseInt(gangpotInput.value), 
+                    zwartgeld: parseInt(zwartgeldInput.value)
+                })
+            });
+
+            alert('Financiën succesvol bijgewerkt!');
+            fetchFinances(); // Herlaad de data
+        });
+    </script>
+</body>
+</html>

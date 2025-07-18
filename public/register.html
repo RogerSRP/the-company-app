@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Registreer - The Company</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Maak een account aan</h1>
+    <form id="registerForm">
+        <input type="text" id="username" placeholder="Accountnaam (voor login)" required>
+        <br><br>
+        <input type="password" id="password" placeholder="Kies een wachtwoord" required>
+        <hr>
+        <input type="text" id="ingameName" placeholder="Ingame Naam">
+        <br><br>
+        <input type="text" id="discordName" placeholder="Discord Naam">
+        <br><br>
+        <input type="text" id="steamName" placeholder="Steam Naam">
+        <br><br>
+        <button type="submit">Registreer</button>
+    </form>
+    <p id="message"></p>
+
+    <script>
+        const form = document.getElementById('registerForm');
+        const messageElement = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const ingameName = document.getElementById('ingameName').value;
+            const discordName = document.getElementById('discordName').value;
+            const steamName = document.getElementById('steamName').value;
+
+            const response = await fetch('/api/users/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    username, 
+                    password, 
+                    ingameName, 
+                    discordName, 
+                    steamName 
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                messageElement.textContent = data.msg + ' Je kunt nu inloggen.';
+                messageElement.style.color = 'green';
+                form.reset();
+            } else {
+                messageElement.textContent = 'Fout: ' + data.msg;
+                messageElement.style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>

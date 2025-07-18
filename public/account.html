@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Accountbeheer - The Company</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Accountbeheer</h1>
+        <a href="/dashboard.html">Terug naar Dashboard</a>
+    </header>
+
+    <main>
+        <h2>Profiel Bewerken</h2>
+        <form id="profileForm">
+            <label for="ingameName">Ingame Naam:</label>
+            <input type="text" id="ingameName" placeholder="Ingame Naam">
+            <br><br>
+            <label for="discordName">Discord Naam:</label>
+            <input type="text" id="discordName" placeholder="Discord Naam">
+            <br><br>
+            <label for="steamName">Steam Naam:</label>
+            <input type="text" id="steamName" placeholder="Steam Naam">
+            <br><br>
+            <button type="submit">Profiel Opslaan</button>
+        </form>
+        <p id="profileMessage"></p>
+
+        <hr>
+
+        <h2>Wachtwoord Wijzigen</h2>
+        <form id="passwordForm">
+            <input type="password" id="oldPassword" placeholder="Oud Wachtwoord" required>
+            <br><br>
+            <input type="password" id="newPassword" placeholder="Nieuw Wachtwoord" required>
+            <br><br>
+            <input type="password" id="confirmPassword" placeholder="Bevestig Nieuw Wachtwoord" required>
+            <br><br>
+            <button type="submit">Wijzig Wachtwoord</button>
+        </form>
+        <p id="passwordMessage"></p>
+    </main>
+
+    <script>
+        const token = localStorage.getItem('token');
+        // Selecteer alle elementen
+        const ingameNameInput = document.getElementById('ingameName');
+        const discordNameInput = document.getElementById('discordName');
+        const steamNameInput = document.getElementById('steamName');
+        const profileForm = document.getElementById('profileForm');
+        const passwordForm = document.getElementById('passwordForm');
+        const profileMessage = document.getElementById('profileMessage');
+        const passwordMessage = document.getElementById('passwordMessage');
+
+        // Beveilig de pagina en laad profielgegevens
+        (async () => {
+            if (!token) {
+                window.location.href = '/index.html';
+                return;
+            }
+            // Haal huidige profielgegevens op
+            const response = await fetch('/api/users/profile', {
+                headers: { 'x-auth-token': token }
+            });
+            const user = await response.json();
+            // Vul de formuliervelden in
+            ingameNameInput.value = user.ingameName || '';
+            discordNameInput.value = user.discordName || '';
+            steamNameInput.value = user.steamName || '';
+        })();
+
+        // Event listener voor het profielformulier
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            profileMessage.textContent = '';
+
+            const response = await fetch('/api/users/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
+                body: JSON.stringify({
+                    ingameName: ingameNameInput.value,
+                    discordName: discordNameInput.value,
+                    steamName: steamNameInput.value
+                })
+            });
+
+            if (response.ok) {
+                profileMessage.textContent = 'Profiel succesvol bijgewerkt!';
+                profileMessage.style.color = 'green';
+            } else {
+                profileMessage.textContent = 'Er is een fout opgetreden.';
+                profileMessage.style.color = 'red';
+            }
+        });
+
+        // Event listener voor het wachtwoordformulier
+        passwordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            passwordMessage.textContent = '';
+
+            const oldPassword = document.getElementById('oldPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                passwordMessage.textContent = 'De nieuwe wachtwoorden komen niet overeen.';
+                passwordMessage.style.color = 'red';
+                return;
+            }
+
+            const response = await fetch('/api/users/password', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
+                body: JSON.stringify({ oldPassword, newPassword })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                passwordMessage.textContent = data.msg;
+                passwordMessage.style.color = 'green';
+                passwordForm.reset();
+            } else {
+                passwordMessage.textContent = 'Fout: ' + data.msg;
+                passwordMessage.style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>

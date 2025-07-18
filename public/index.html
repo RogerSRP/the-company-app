@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - The Company</title>
+    <link rel="stylesheet" href="style.css"> </head>
+<body>
+    <h1>Login The Company HQ</h1>
+    <form id="loginForm">
+        <input type="text" id="username" placeholder="Gebruikersnaam" required>
+        <br><br>
+        <input type="password" id="password" placeholder="Wachtwoord" required>
+        <br><br>
+        <button type="submit">Log In</button>
+    </form>
+    <p id="message"></p>
+    <p>Nog geen account? <a href="/register.html">Registreer hier</a>.</p>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const messageElement = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Stuur de data naar de login-route
+            const response = await fetch('/api/users/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Login succesvol
+                messageElement.textContent = 'Login succesvol! Je wordt doorgestuurd...';
+                messageElement.style.color = 'green';
+
+                // Sla het token op in de browser
+                localStorage.setItem('token', data.token);
+
+                // Stuur de gebruiker door naar het dashboard
+                window.location.href = '/dashboard.html';
+            } else {
+                // Login mislukt
+                messageElement.textContent = 'Fout: ' + data.msg;
+                messageElement.style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>

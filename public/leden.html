@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Ledenlijst - The Company</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-actions { display: none; } /* Standaard verborgen */
+        table { table-layout: fixed; width: 100%; }
+        th, td { word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Ledenlijst</h1>
+        <a href="/dashboard.html">Terug naar Dashboard</a>
+    </header>
+
+    <main>
+        <table id="membersTable">
+            <thead>
+                <tr>
+                    <th>Accountnaam</th>
+                    <th>Ingame Naam</th>
+                    <th>Discord Naam</th>
+                    <th>Steam Naam</th>
+                    <th>Rang</th>
+                    <th class="admin-actions">Acties</th>
+                </tr>
+            </thead>
+            <tbody id="membersTableBody">
+                </tbody>
+        </table>
+    </main>
+
+    <script>
+        const token = localStorage.getItem('token');
+        let loggedInUser = {};
+
+        // Definieer de rangen hier, zodat we ze overal kunnen gebruiken
+        const allRanks = [
+            'Oyabun', 'Wakagashira', 'Saikō-komon', 'Shateigashira', 'Sō-honbuchō', 
+            'Zetsumetsutai', 'Kyōdai', 'Shatei', 'Kumi-in', 'Minarai'
+        ];
+        const adminRanks = ['Oyabun', 'Wakagashira', 'Saikō-komon'];
+
+        // Beveilig de pagina en haal data op
+        (async () => {
+            if (!token) { window.location.href = '/index.html'; return; }
+            
+            try {
+                loggedInUser = JSON.parse(atob(token.split('.')[1]));
+            } catch(e) { window.location.href = '/index.html'; return; }
+
+            // Toon de 'Acties' kolom als de gebruiker een admin-rang heeft
+            if (adminRanks.includes(loggedInUser.role)) {
+                document.querySelectorAll('.admin-actions').forEach(el => el.style.display = 'table-cell');
+            }
+
+            fetchMembers();
+        })();
+
+        // Functie om de leden op te halen en in de tabel te tonen
+        async function fetchMembers() {
+            const response = await fetch('/api/users', {
+                headers: { 'x-auth-token': token }
+            });
+            const users = await response.json();
+            
+            const tableBody = document.getElementById('membersTableBody');
+            tableBody.innerHTML = ''; 
+
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                
+                let rowContent = `
+                    <td>${user.username}</td>
+                    <td>${user.ingameName || '-'}</td>
+                    <td>${user.discordName || '-'}</td>
+                    <td>${user.steamName || '-'}</td>
+                    <td>${user.role}</td>
+                `;
+
+                // Voeg de actie-cel toe als de ingelogde gebruiker een admin-rang heeft
+                if (adminRanks.includes(loggedInUser.role)) {
+                    rowContent += `
+                        <td>
+                            <button onclick="changeRole(event, '${user._id}', '${user.role}')">Wijzig Rang</button>
+                        </td>
+                    `;
+                }
+                
+                row.innerHTML = rowContent;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Functie om de rol van een gebruiker te wijzigen met een dropdown
+        function changeRole(event, userId, currentRole) {
+            const actionsCell = event.target.parentElement;
+            actionsCell.innerHTML = ''; // Leeg de cel om de knop te vervangen
+
+            const select = document.createElement('select');
+            allRanks.forEach(rank => {
+                const option = document.createElement('option');
+                option.value = rank;
+                option.textContent = rank;
+                if (rank === currentRole) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+
+            const saveButton = document.createElement('button');
+            saveButton.textContent = 'Opslaan';
+            saveButton.onclick = async () => {
+                const newRole = select.value;
+                const response = await fetch(`/api/users/role/${userId}`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-auth-token': token 
+                    },
+                    body: JSON.stringify({ role: newRole })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    alert('Fout: ' + (data.msg || 'Er is iets misgegaan.'));
+                }
+                fetchMembers(); // Herlaad de tabel
+            };
+
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Annuleren';
+            cancelButton.onclick = () => fetchMembers(); // Herlaad de tabel om te annuleren
+
+            actionsCell.appendChild(select);
+            actionsCell.appendChild(saveButton);
+            actionsCell.appendChild(cancelButton);
+        }
+    </script>
+</body>
+</html>

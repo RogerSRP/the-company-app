@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - The Company</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="profile-dropdown-container">
+        <div class="profile-menu">
+            <button id="profileBtn">Profiel &#9662;</button>
+            <div id="profileDropdown" class="dropdown-content">
+                <a href="/account.html">Accountbeheer</a>
+                <a href="#" id="logoutLink">Uitloggen</a>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <h1 id="welcomeMessage"></h1>
+        <nav>
+            <a href="/leden.html">Ledenlijst</a>
+            <a href="/stock.html">Stock</a>
+            <a href="/scenarios.html">Scenario's</a>
+            <a href="/afwezigheid.html">Afwezigheid</a>
+        </nav>
+    </header>
+
+    <main>
+        <p>Dit is het hoofdkwartier van The Company.</p>
+        
+        <div id="adminMenu" style="display: none;">
+            <hr>
+            <h2>Beheerderspaneel</h2>
+            <div class="admin-buttons">
+                <a href="/reservations.html" class="admin-button">Reserveringen Beheer</a>
+                <a href="/financien.html" class="admin-button">Financiën Beheer</a>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        .admin-buttons a.admin-button {
+            display: block; /* Zorgt dat ze onder elkaar staan */
+            background-color: #333;
+            color: #f0f0f0;
+            padding: 12px;
+            margin-bottom: 10px; /* Ruimte tussen de knoppen */
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            border: 1px solid #555;
+            transition: background-color 0.2s;
+        }
+        .admin-buttons a.admin-button:hover {
+            background-color: #444;
+            text-decoration: none;
+        }
+    </style>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) { window.location.href = '/index.html'; }
+
+        const profileBtn = document.getElementById('profileBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+        profileBtn.addEventListener('click', () => {
+            profileDropdown.classList.toggle('show');
+        });
+
+        window.onclick = function(event) {
+            if (!event.target.matches('#profileBtn')) {
+                if (profileDropdown.classList.contains('show')) {
+                    profileDropdown.classList.remove('show');
+                }
+            }
+        }
+
+        document.getElementById('logoutLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            window.location.href = '/index.html';
+        });
+
+        (async () => {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                document.getElementById('welcomeMessage').textContent = `Welkom, ${payload.username}!`;
+
+                const adminRanks = ['Oyabun', 'Wakagashira', 'Saikō-komon'];
+                if (adminRanks.includes(payload.role)) {
+                    document.getElementById('adminMenu').style.display = 'block';
+                }
+            } catch (err) {
+                console.error('Fout bij het verwerken van het token:', err);
+                localStorage.removeItem('token');
+                window.location.href = '/index.html';
+            }
+        })();
+    </script>
+</body>
+</html>
